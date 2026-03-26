@@ -4,8 +4,12 @@
   "description": "a project used for the unit testing with NodeJS home task",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
-    "coverage": "jest --coverage",
+    "test": "jest --runTestsByPath ./test/user_data_handler.jest.test.js",
+    "test:nock": "mocha ./test/user_data_handler.nock.test.js",
+    "test:sinon": "mocha ./test/user_data_handler.sinon.test.js",
+    "coverage": "jest --coverage --runTestsByPath ./test/user_data_handler.jest.test.js",
+    "coverage:nock": "nyc mocha ./test/user_data_handler.nock.test.js",
+    "coverage:sinon": "nyc mocha ./test/user_data_handler.sinon.test.js",
     "start-server": "node ./src/server/server.js",
     "eslint": "eslint ./"
   },
@@ -19,27 +23,40 @@
     "url": "https://github.com/stranger2626/unit-testing-with-mocks-home-task/issues"
   },
   "homepage": "https://github.com/stranger2626/unit-testing-with-mocks-home-task#readme",
-"jest": {
-  "collectCoverage": true,
-  "collectCoverageFrom": [
-    "src/data_handlers/user_data_handler.js"
-  ],
-  "coveragePathIgnorePatterns": [
-    "/test/"
-  ],
-  "coverageReporters": [
-    "text",
-    "html"
-  ],
-  "coverageThreshold": {
-    "global": {
-      "lines": 100,
-      "functions": 100,
-      "branches": 100,
-      "statements": 100
+  "jest": {
+    "collectCoverageFrom": [
+      "src/data_handlers/user_data_handler.js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/test/"
+    ],
+    "coverageReporters": [
+      "text",
+      "html"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "lines": 100,
+        "functions": 100,
+        "branches": 100,
+        "statements": 100
+      }
     }
-  }
-},
+  },
+  "nyc": {
+    "reporter": [
+      "text",
+      "html"
+    ],
+    "include": [
+      "src/data_handlers/user_data_handler.js"
+    ],
+    "branches": 100,
+    "functions": 100,
+    "lines": 100,
+    "statements": 100,
+    "check-coverage": true
+  },
   "husky": {
     "hooks": {
       "pre-commit": "yarn eslint",
@@ -51,6 +68,7 @@
     "express": "^4.17.1"
   },
   "devDependencies": {
+    "chai": "^6.2.2",
     "eslint": "^7.10.0",
     "eslint-config-standard": "^14.1.1",
     "eslint-plugin-import": "^2.22.0",
@@ -58,6 +76,10 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "husky": "^4.3.0",
-    "jest": "^30.3.0"
+    "jest": "^30.3.0",
+    "mocha": "^11.7.5",
+    "nock": "^14.0.11",
+    "nyc": "^18.0.0",
+    "sinon": "^21.0.0"
   }
 }
