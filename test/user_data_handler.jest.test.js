@@ -1,12 +1,10 @@
 const { describe, it, beforeEach, expect } = require('@jest/globals')
 const axios = require('axios')
 const UserDataHandler = require('../src/data_handlers/user_data_handler')
+const { USERS_URL } = require('../src/constants/api')
+const { USER_DATA_HANDLER_MESSAGES, createLoadUsersFailedMessage } = require('../src/constants/user_data_handler_messages')
+const { user1, user2, users, duplicatedMatchingUsers } = require('./fixtures/users')
 jest.mock('axios')
-
-const makeUsers = () => ([
-  { id: 1, email: 'a@test.com', name: 'A' },
-  { id: 2, email: 'b@test.com', name: 'B' }
-])
 
 describe('UserDataHandler', function () {
   let handler
@@ -24,34 +22,34 @@ describe('UserDataHandler', function () {
 
   describe('loadUsers', function () {
     it('should fetch users data and update users array', async function () {
-      const mockUsers = makeUsers()
-      axios.get.mockResolvedValue({ data: mockUsers })
+      axios.get.mockResolvedValue({ data: users })
       await handler.loadUsers()
 
-      expect(axios.get).toHaveBeenCalledWith('http://localhost:3000/users')
-      expect(handler.users).toEqual(mockUsers)
+      expect(axios.get).toHaveBeenCalledWith(USERS_URL)
+      expect(handler.users).toEqual(users)
     })
 
     it('should throw an error if fetching fails', async function () {
       axios.get.mockRejectedValue(new Error('Network error'))
-      await expect(handler.loadUsers()).rejects.toThrow('Failed to load users data: Error: Network error')
+      await expect(handler.loadUsers()).rejects.toThrow(createLoadUsersFailedMessage(new Error('Network error')))
     })
   })
 
   describe('getUserEmailsList', function () {
     it('should return a string of user emails separated by semicolons', function () {
-      handler.users = makeUsers()
-      expect(handler.getUserEmailsList()).toBe('a@test.com;b@test.com')
+      handler.users = users
+      const expectedEmails = users.map(({ email }) => email).join(';')
+      expect(handler.getUserEmailsList()).toBe(expectedEmails)
     })
 
     it('should throw an error if no users are loaded', function () {
-      expect(() => handler.getUserEmailsList()).toThrow('No users loaded!')
+      expect(() => handler.getUserEmailsList()).toThrow(USER_DATA_HANDLER_MESSAGES.NO_USERS_LOADED)
     })
   })
 
   describe('getNumberOfUsers', function () {
     it('should return the number of users', function () {
-      handler.users = makeUsers()
+      handler.users = users
       expect(handler.getNumberOfUsers()).toBe(2)
     })
 
@@ -62,47 +60,41 @@ describe('UserDataHandler', function () {
 
   describe('isMatchingAllSearchParams', function () {
     it('should return true if user matches all search parameters', function () {
-      const user = { id: 1, email: 'a@test.com', name: 'A' }
-      const searchParams = { email: 'a@test.com', name: 'A' }
-      expect(handler.isMatchingAllSearchParams(user, searchParams)).toBe(true)
+      const searchParams = { email: user1.email, name: user1.name }
+      expect(handler.isMatchingAllSearchParams(user1, searchParams)).toBe(true)
     })
 
     it('should return false if user does not match all search parameters', function () {
-      const user = { id: 1, email: 'a@test.com', name: 'A' }
-      const searchParams = { email: 'b@test.com', name: 'A' }
-      expect(handler.isMatchingAllSearchParams(user, searchParams)).toBe(false)
+      const searchParams = { email: user2.email, name: user1.name }
+      expect(handler.isMatchingAllSearchParams(user1, searchParams)).toBe(false)
     })
   })
 
   describe('findUsers', function () {
     it('should return an array of users matching search parameters', function () {
-      handler.users = makeUsers()
-      const searchParams = { email: 'a@test.com', name: 'A' }
-      expect(handler.findUsers(searchParams)).toEqual([{ id: 1, email: 'a@test.com', name: 'A' }])
+      handler.users = users
+      const searchParams = { email: user1.email, name: user1.name }
+      expect(handler.findUsers(searchParams)).toEqual([user1])
     })
 
     it('should throw an error if no search parameters are provided', function () {
-      expect(() => handler.findUsers()).toThrow('No search parameters provoded!')
+      expect(() => handler.findUsers()).toThrow(USER_DATA_HANDLER_MESSAGES.NO_SEARCH_PARAMETERS)
     })
 
     it('should throw an error if no users are loaded', function () {
-      const searchParams = { email: 'a@test.com', name: 'A' }
-      expect(() => handler.findUsers(searchParams)).toThrow('No users loaded!')
+      const searchParams = { email: user1.email, name: user1.name }
+      expect(() => handler.findUsers(searchParams)).toThrow(USER_DATA_HANDLER_MESSAGES.NO_USERS_LOADED)
     })
 
     it('should throw an error if no users match search parameters', function () {
-      handler.users = makeUsers()
-      const searchParams = { email: 'c@test.com', name: 'C' }
-      expect(() => handler.findUsers(searchParams)).toThrow('No matching users found!')
+      handler.users = users
+      const searchParams = { email: 'not-matching@example.com', name: 'Not Matching' }
+      expect(() => handler.findUsers(searchParams)).toThrow(USER_DATA_HANDLER_MESSAGES.NO_MATCHING_USERS)
     })
 
     it('should return multiple users if multiple match search parameters', function () {
-      const duplicatedMatchingUsers = [
-        { id: 1, email: 'a@test.com', name: 'A' },
-        { id: 2, email: 'a@test.com', name: 'A' }
-      ]
       handler.users = duplicatedMatchingUsers
-      const searchParams = { email: 'a@test.com', name: 'A' }
+      const searchParams = { email: user1.email, name: user1.name }
       expect(handler.findUsers(searchParams)).toEqual(duplicatedMatchingUsers)
     })
   })

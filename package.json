@@ -7,6 +7,7 @@
     "test": "jest --runTestsByPath ./test/user_data_handler.jest.test.js",
     "test:nock": "mocha ./test/user_data_handler.nock.test.js",
     "test:sinon": "mocha ./test/user_data_handler.sinon.test.js",
+    "test:all": "yarn test && yarn test:nock && yarn test:sinon",
     "coverage": "jest --coverage --runTestsByPath ./test/user_data_handler.jest.test.js",
     "coverage:nock": "nyc mocha ./test/user_data_handler.nock.test.js",
     "coverage:sinon": "nyc mocha ./test/user_data_handler.sinon.test.js",
@@ -60,15 +61,17 @@
   "husky": {
     "hooks": {
       "pre-commit": "yarn eslint",
-      "pre-push": "yarn test"
+      "pre-push": "yarn test:all"
     }
   },
   "dependencies": {
     "axios": "^0.19.2",
+    "dotenv": "^16.5.0",
     "express": "^4.17.1"
   },
   "devDependencies": {
     "chai": "^6.2.2",
+    "chai-as-promised": "^7.1.2",
     "eslint": "^7.10.0",
     "eslint-config-standard": "^14.1.1",
     "eslint-plugin-import": "^2.22.0",

@@ -1,13 +1,14 @@
 const fs = require('fs')
 const path = require('path')
 const express = require('express')
+const { USERS_PATH } = require('../constants/api')
 const app = express()
 const port = process.env.SERVER_PORT || 3000
 
 const pathToUsersJson = path.join(__dirname, '..', '..', 'data', 'users.json')
 const users = JSON.parse(fs.readFileSync(pathToUsersJson))
 
-app.get('/users', function (req, res) {
+app.get(USERS_PATH, function (req, res) {
   res.send(users)
 })
 

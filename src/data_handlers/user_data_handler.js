@@ -1,4 +1,6 @@
 const axios = require('axios').default
+const { USERS_URL } = require('../constants/api')
+const { USER_DATA_HANDLER_MESSAGES, createLoadUsersFailedMessage } = require('../constants/user_data_handler_messages')
 
 /**
  *
@@ -20,8 +22,8 @@ class UserDataHandler {
    * @memberof UserDataHandler
    */
   async loadUsers () {
-    const response = await axios.get('http://localhost:3000/users').catch(err => {
-      throw new Error(`Failed to load users data: ${err}`)
+    const response = await axios.get(USERS_URL).catch(err => {
+      throw new Error(createLoadUsersFailedMessage(err))
     })
     this.users = response.data
   }
@@ -33,7 +35,7 @@ class UserDataHandler {
    * @memberof UserDataHandler
    */
   getUserEmailsList () {
-    if (this.users.length === 0) throw new Error('No users loaded!')
+    if (this.users.length === 0) throw new Error(USER_DATA_HANDLER_MESSAGES.NO_USERS_LOADED)
     const arrayOfEmails = this.users.map(user => user.email)
     const listOfUSerEmails = arrayOfEmails.join(';')
     return listOfUSerEmails
@@ -76,10 +78,10 @@ class UserDataHandler {
    * @memberof UserDataHandler
    */
   findUsers (searchParamsObject) {
-    if (!searchParamsObject) throw new Error('No search parameters provoded!')
-    if (this.users.length === 0) throw new Error('No users loaded!')
+    if (!searchParamsObject) throw new Error(USER_DATA_HANDLER_MESSAGES.NO_SEARCH_PARAMETERS)
+    if (this.users.length === 0) throw new Error(USER_DATA_HANDLER_MESSAGES.NO_USERS_LOADED)
     const matchingUsers = this.users.filter(user => this.isMatchingAllSearchParams(user, searchParamsObject))
-    if (matchingUsers.length === 0) throw new Error('No matching users found!')
+    if (matchingUsers.length === 0) throw new Error(USER_DATA_HANDLER_MESSAGES.NO_MATCHING_USERS)
     return matchingUsers
   }
 }
