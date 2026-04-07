@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const express = require('express')
-const { USERS_PATH } = require('../constants/api')
+const { USERS_PATH } = require('../data_handlers/constants')
 const app = express()
 const port = process.env.SERVER_PORT || 3000
 

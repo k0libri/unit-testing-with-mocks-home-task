@@ -1,17 +1,16 @@
 const { describe, it, beforeEach, afterEach } = require('mocha')
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
-const sinon = require('sinon')
-const axios = require('axios').default
-const UserDataHandler = require('../src/data_handlers/user_data_handler')
-const { USERS_URL } = require('../src/constants/api')
-const { USER_DATA_HANDLER_MESSAGES, createLoadUsersFailedMessage } = require('../src/constants/user_data_handler_messages')
+const nock = require('nock')
+const UserDataHandler = require('./user_data_handler')
+const { API_BASE_URL, USERS_PATH, USER_DATA_HANDLER_MESSAGES } = require('./constants')
+const format = require('../utils/format')
 const { user1, user2, users, duplicatedMatchingUsers } = require('./fixtures/users')
 
 chai.use(chaiAsPromised)
 const { expect } = chai
 
-describe('UserDataHandler (sinon)', function () {
+describe('UserDataHandler (nock)', function () {
   let handler
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('UserDataHandler (sinon)', function () {
   })
 
   afterEach(() => {
-    sinon.restore()
+    nock.cleanAll()
   })
 
   describe('constructor', function () {
@@ -30,19 +29,22 @@ describe('UserDataHandler (sinon)', function () {
 
   describe('loadUsers', function () {
     it('should fetch users data and update users array', async function () {
-      const getStub = sinon.stub(axios, 'get').resolves({ data: users })
+      const scope = nock(API_BASE_URL).get(USERS_PATH).reply(200, users)
 
       await handler.loadUsers()
 
-      expect(getStub.calledOnceWithExactly(USERS_URL)).to.equal(true)
+      expect(scope.isDone()).to.equal(true)
       expect(handler.users).to.deep.equal(users)
     })
 
     it('should throw an error if fetching fails', async function () {
-      const getStub = sinon.stub(axios, 'get').rejects(new Error('Network error'))
+      const scope = nock(API_BASE_URL).get(USERS_PATH).replyWithError('Network error')
 
-      await expect(handler.loadUsers()).to.be.rejectedWith(Error, createLoadUsersFailedMessage(new Error('Network error')))
-      expect(getStub.calledOnceWithExactly(USERS_URL)).to.equal(true)
+      await expect(handler.loadUsers()).to.be.rejectedWith(
+        Error,
+        format(USER_DATA_HANDLER_MESSAGES.LOAD_USERS_FAILED, { error: new Error('Network error') })
+      )
+      expect(scope.isDone()).to.equal(true)
     })
   })
 

@@ -1,6 +1,6 @@
 const axios = require('axios').default
-const { USERS_URL } = require('../constants/api')
-const { USER_DATA_HANDLER_MESSAGES, createLoadUsersFailedMessage } = require('../constants/user_data_handler_messages')
+const { USERS_URL, USER_DATA_HANDLER_MESSAGES } = require('./constants')
+const format = require('../utils/format')
 
 /**
  *
@@ -23,7 +23,7 @@ class UserDataHandler {
    */
   async loadUsers () {
     const response = await axios.get(USERS_URL).catch(err => {
-      throw new Error(createLoadUsersFailedMessage(err))
+      throw new Error(format(USER_DATA_HANDLER_MESSAGES.LOAD_USERS_FAILED, { error: err }))
     })
     this.users = response.data
   }
