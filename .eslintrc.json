@@ -10,6 +10,17 @@
     "parserOptions": {
         "ecmaVersion": 11
     },
+    "overrides": [
+        {
+            "files": [
+                "test/**/*.js",
+                "src/**/*.jest.test.js"
+            ],
+            "env": {
+                "jest": true
+            }
+        }
+    ],
     "rules": {
     }
 }
